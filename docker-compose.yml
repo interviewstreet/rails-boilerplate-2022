@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  postgres:
+    container_name: postgres_boilerplate
+    image: postgres:14.2-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5430:5432"
+
+  rails:
+    container_name: rails_boilerplate
+    networks:
+      - default
+    build:
+      context: .
+      dockerfile: docker-setup/local/Dockerfile
+    tty: true
+    stdin_open: true
+    volumes:
+      - .:/backend
+    env_file:
+      - .env.development
+    depends_on:
+      - postgres
+    ports:
+      - "8085:8000"
+
+networks:
+  default:
+    name: backend-network
